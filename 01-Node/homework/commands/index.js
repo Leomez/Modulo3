@@ -17,7 +17,13 @@ module.exports = {
                 data(file.toString())
             )
         }
-    )},             
+    )},
+    echo: (data) => {
+        data(
+            console.log('hola')
+        )
+    }
+    
 }
 
 
