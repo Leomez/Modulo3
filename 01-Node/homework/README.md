@@ -231,7 +231,7 @@ También lo podés hacer por el módulo nativo http, pero es menos amigable.
 
 Ahora que tenés `request` disponible para requerir, implementá el comando `curl`. `curl` hará un pedido GET de HTTP a un URL dado, e imprimirá el body del response del HTTP.
 
-ej: `curl http:www.google.com`
+ej: `curl http://www.google.com`
 
 
 ## Refactoreando

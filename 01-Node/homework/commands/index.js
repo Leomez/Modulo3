@@ -1,4 +1,5 @@
 const fs = require('fs')
+const axios = require('axios')
 
 
 module.exports = {
@@ -56,6 +57,13 @@ module.exports = {
             )
         }
         )
+    },
+    curl: (input, done) => {
+        axios(input.toString())
+        .then(data => data.json())
+        .then(data => done(data.data))
+        .catch(err => console.log(err))
+        
     }
 }
 
