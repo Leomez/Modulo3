@@ -1,6 +1,7 @@
 var http = require('http');
 var fs   = require('fs');
 
+
 var beatles=[{
   name: "John Lennon",
   birthdate: "09/10/1940",
@@ -23,7 +24,7 @@ var beatles=[{
 }
 ]
 function match(url) {
-  const nombres = ['api/John%20Lennon','api/Paul%20McCartney','api/George%20Harrison','api/Richard%20Starkey'];
+  const nombres = ['/api/John%20Lennon','/api/Paul%20McCartney','/api/George%20Harrison','/api/Richard%20Starkey'];
   if(nombres.indexOf(url) > 0){
     return nombres.indexOf(url)
   } else {
@@ -31,14 +32,18 @@ function match(url) {
   }  
 }
 
+console.log(match('/api/John%20Lennon'));
+
 http.createServer((req,res) => {
-  if (match(req.url)) {
+  console.log(req.url);
+  if (req.url === '/api') {
+    res.writeHead(200, {'Conten-Type' : 'application/json'})
+    res.end(JSON.stringify(beatles))
+    console.log('entre a api');
+  }
+  if (match(req.url)) {    
     res.writeHead(200, {'Conten-Type' : 'application/json'})
     res.end(JSON.stringify(beatles[match(req.url)]))
-  }
-  if (req.url === '/api/nombre') {
-    
-    res.writeHead(200, {'Conten-Type' : 'application/json'})
-    res.end(JSON.stringify(beatles[0]))
+    console.log('entre a ' + req.url);
   }
 }).listen(3001, 'localhost')
