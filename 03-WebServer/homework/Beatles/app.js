@@ -23,27 +23,42 @@ var beatles=[{
   profilePic:"http://cp91279.biography.com/BIO_Bio-Shorts_0_Ringo-Starr_SF_HD_768x432-16x9.jpg"
 }
 ]
-function match(url) {
-  const nombres = ['/api/John%20Lennon','/api/Paul%20McCartney','/api/George%20Harrison','/api/Richard%20Starkey'];
-  if(nombres.indexOf(url) > 0){
-    return nombres.indexOf(url)
-  } else {
-    return false
-  }  
+
+function beatle(index) {
+  let name = beatles[index].name
+  let birthdate = beatles[index].birthdate
+  let pic = beatles[index].profilePic
+  return {name, birthdate, pic}
 }
 
-console.log(match('/api/John%20Lennon'));
+const rutas = ['/api/John%20Lennon','/api/Paul%20McCartney','/api/George%20Harrison','/api/Richard%20Starkey'];
 
 http.createServer((req,res) => {
   console.log(req.url);
-  if (req.url === '/api') {
-    res.writeHead(200, {'Conten-Type' : 'application/json'})
-    res.end(JSON.stringify(beatles))
+  if (req.url === '/') {
+    let html = fs.readFileSync(__dirname + '/index.html')
+    res.writeHead(200, {'Content-Type' : 'text/html'})
+    res.end(html)
+  }
+  else if (req.url === '/api') {
+    res.writeHead(200, {'Conten-Type' : 'text/html'})
+    let html = fs.readFileSync(__dirname + '/api.html')
+    res.end(html)
     console.log('entre a api');
   }
-  if (match(req.url)) {    
-    res.writeHead(200, {'Conten-Type' : 'application/json'})
-    res.end(JSON.stringify(beatles[match(req.url)]))
-    console.log('entre a ' + req.url);
+  else if (rutas.includes(req.url)) { 
+    let i = rutas.indexOf(req.url)
+    let html = fs.readFileSync(__dirname + '/beatle.html', 'utf8')   
+    res.writeHead(200, {'Conten-Type' : 'text/html'})
+    html = html.replace('{nombre}', beatle(i).name);
+    html = html.replace('{tituloNombre}', beatle(i).name)
+    html = html.replace('{fechaNacimiento}', beatle(i).birthdate)
+    html = html.replace('{profilePic}', beatle(i).pic)    
+    res.end(html)
+    // console.log('entre a ' + req.url);
+  } else {
+    let html = fs.readFileSync(__dirname + '/404.html')
+    res.writeHead(404, {'Conten-Type' : 'text/html'})
+    res.end(html)
   }
 }).listen(3001, 'localhost')
