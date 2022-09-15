@@ -54,8 +54,7 @@ http.createServer((req,res) => {
     html = html.replace('{tituloNombre}', beatle(i).name)
     html = html.replace('{fechaNacimiento}', beatle(i).birthdate)
     html = html.replace('{profilePic}', beatle(i).pic)    
-    res.end(html)
-    // console.log('entre a ' + req.url);
+    res.end(html)   
   } else {
     let html = fs.readFileSync(__dirname + '/404.html')
     res.writeHead(404, {'Conten-Type' : 'text/html'})
