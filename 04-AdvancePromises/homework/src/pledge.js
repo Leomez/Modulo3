@@ -46,6 +46,10 @@ $Promise.prototype._callHandlers = function () {              //cuando es invoca
  }   
 }
 
+$Promise.prototype.catch = function (errorCb) {
+    return this.then(null, errorCb)
+}
+
 module.exports = $Promise;
 /*-------------------------------------------------------
 El spec fue diseñado para funcionar con Test'Em, por lo tanto no necesitamos
