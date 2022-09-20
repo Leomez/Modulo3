@@ -29,9 +29,11 @@ $Promise.prototype._internalReject = function (value) {
 
 $Promise.prototype.then = function (successCb, errorCb) {
     if (typeof successCb !== 'function') successCb = false;
-    if (typeof errorCb !== 'function') errorCb=false
-    this._handlerGroups.push({successCb, errorCb})
+    if (typeof errorCb !== 'function') errorCb=false;
+    const downstreamPromise = new $Promise(function () {})
+    this._handlerGroups.push({successCb, errorCb, downstreamPromise})
     if (this._state !== 'pending') this._callHandlers()
+    return downstreamPromise;
 }
 
 $Promise.prototype._callHandlers = function () {              //cuando es invocada
