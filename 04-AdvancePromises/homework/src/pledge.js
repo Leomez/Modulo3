@@ -7,7 +7,7 @@ function $Promise(executor) {
     if (typeof executor !== 'function') throw new TypeError('executor function')
     this._state = 'pending'
     this._handlerGroups = [];
-    executor(this._internalResolve.bind(this), this._internalReject.bind(this) )
+    executor(this._internalResolve.bind(this), this._internalReject.bind(this))
 
 }
 $Promise.prototype._internalResolve = function (value) {
@@ -15,11 +15,11 @@ $Promise.prototype._internalResolve = function (value) {
         this._state = 'fulfilled'
         this._value = value
         this._callHandlers()      //invoca al callHandleres
-    }    
+    }
 }
 
 
-$Promise.prototype._internalReject = function (value) { 
+$Promise.prototype._internalReject = function (value) {
     if (this._state === 'pending') {
         this._state = 'rejected'
         this._value = value
@@ -27,25 +27,65 @@ $Promise.prototype._internalReject = function (value) {
     }
 }
 
+
+
 $Promise.prototype.then = function (successCb, errorCb) {
     if (typeof successCb !== 'function') successCb = false;
-    if (typeof errorCb !== 'function') errorCb=false;
-    const downstreamPromise = new $Promise(function () {})
-    this._handlerGroups.push({successCb, errorCb, downstreamPromise})
+    if (typeof errorCb !== 'function') errorCb = false;
+    const downstreamPromise = new $Promise(function () { })
+    this._handlerGroups.push({ successCb, errorCb, downstreamPromise })
     if (this._state !== 'pending') this._callHandlers()
     return downstreamPromise;
 }
 
 $Promise.prototype._callHandlers = function () {              //cuando es invocada
- while (this._handlerGroups.length > 0) {                     //se fija si hay handlers en el handlerGroups
-    let current = this._handlerGroups.shift()                 //si hay, tomo el primero del arreglo y lo guarda en current
-    if (this._state === 'fulfilled') {                        //comprueva si es fulfilled o rejected
-        current.successCb && current.successCb(this._value)   //si es fulfilled le pasa el value correspondiente
+    while (this._handlerGroups.length > 0) {                     //se fija si hay handlers en el handlerGroups
+        let current = this._handlerGroups.shift()                 //si hay, tomo el primero del arreglo y lo guarda en current
+        if (this._state === 'fulfilled') {                        //comprueva si es fulfilled o rejected
+            //el valor de la nueva promesa depende de lo que ejecute el current
+            if (!current.successCb) {
+                //pB = pA.then(null, eH)
+                current.downstreamPromise._internalResolve(this._value)
+            } else {
+                try {
+                    const resultado = current.successCb(this._value)
+                    // resultado = promiseZ
+                    if (resultado instanceof $Promise) {
+                        resultado.then(
+                            value => current.downstreamPromise._internalResolve(value),
+                            err => current.downstreamPromise._internalReject(err));
+                    } else {
+                        current.downstreamPromise._internalResolve(resultado)
+                    }
+                } catch (e) {
+                    current.downstreamPromise._internalReject(e)
+                }
+            }
+            // current.successCb && current.successCb(this._value)   //si es fulfilled le pasa el value correspondiente
+        }
+        else if (this._state === 'rejected') {                    //si es rejected, le pasa el value para la razon de rechazo 
+            if (!current.errorCb) {
+                //pB = pA.then(successCb)
+                current.downstreamPromise._internalReject(this._value)
+            } else {
+                try {
+                    const resultado = current.errorCb(this._value)
+                    if (resultado instanceof $Promise) {
+                        resultado.then(
+                            value => current.downstreamPromise._internalResolve(value),
+                            err => current.downstreamPromise._internalReject(err)
+                        )
+                    } else {
+                        current.downstreamPromise._internalResolve(resultado)
+                    }
+                } catch (e) {
+                    current.downstreamPromise._internalReject(e)
+                }
+            }
+
+            // current.errorCb && current.errorCb(this._value)
+        }
     }
-    else if (this._state === 'rejected') {                    //si es rejected, le pasa el value para la razon de rechazo 
-        current.errorCb && current.errorCb(this._value)
-    }
- }   
 }
 
 $Promise.prototype.catch = function (errorCb) {
