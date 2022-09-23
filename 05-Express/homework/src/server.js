@@ -36,4 +36,23 @@ server.post(PATH, (req, res) => {
 
 })
 
+server.post('/posts/author/:author', (req, res) => {
+    const { title, contents } = req.body
+    //NO ESTA BIEN. REVISAR LA CONSIGNA...
+    if (!title || !contents) {
+        return res.status(STATUS_USER_ERROR).json(
+            {
+                error: "No se recibieron los parámetros necesarios para crear el Post"
+            }
+        )
+    }
+    
+    const author = req.params.author;
+    posts.forEach(post => {
+        if (post.author === author) {
+            res.status(200).json(post)
+        }
+    });  
+})
+
 module.exports = { posts, server };
